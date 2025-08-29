@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
     
-    // --- Create CIBIL-Style Report (NOW WITH ANIMATIONS) ---
+    // --- Create CIBIL-Style Report (WITH ENHANCED ANIMATIONS) ---
     function createCibilReport(applicantId) {
         const applicant = applicantsData[applicantId];
         const latestRecord = applicant.history.length > 0 ? applicant.history.reduce((latest, current) => current.Month_Offset > latest.Month_Offset ? current : latest) : { Predicted_Prob_Default: 0, Risk_Category: 'N/A' };
@@ -183,7 +183,6 @@ document.addEventListener('DOMContentLoaded', function () {
         summaryContent.textContent = "Generating summary...";
         summaryContainer.classList.remove('hidden');
         gsap.set(summaryContainer, { height: 'auto', opacity: 1 });
-        const autoHeight = gsap.getProperty(summaryContainer, "height");
         gsap.from(summaryContainer, { height: 0, opacity: 0, duration: 0.6, ease: 'power2.out' });
         
         generateBtn.style.display = 'none';
@@ -211,7 +210,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- Landing Page Animations ---
     let heroScene, heroCamera, heroRenderer, heroParticles;
     function initHeroAnimation() {
-       // [The existing, working Three.js hero animation code remains here]
         const container = document.getElementById('hero-animation');
         if (!container) return;
         heroScene = new THREE.Scene();
@@ -219,19 +217,16 @@ document.addEventListener('DOMContentLoaded', function () {
         heroRenderer = new THREE.WebGLRenderer({ alpha: true });
         heroRenderer.setSize(window.innerWidth, window.innerHeight);
         container.appendChild(heroRenderer.domElement);
-
         const particleCount = 8000;
         const geometry = new THREE.BufferGeometry();
         const positions = new Float32Array(particleCount * 3);
         const heroTargetPositions = new Float32Array(particleCount * 3);
         const heroInitialPositions = new Float32Array(particleCount * 3);
-
         const fontLoader = new THREE.FontLoader();
         fontLoader.load('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/fonts/helvetiker_bold.typeface.json', 
             function (font) {
                 const textGeometry = new THREE.TextGeometry('RISKON', { font: font, size: 1.5, height: 0.2, curveSegments: 12 });
                 textGeometry.center();
-                
                 const sampler = new THREE.MeshSurfaceSampler(new THREE.Mesh(textGeometry)).build();
                 const tempPosition = new THREE.Vector3();
                 for (let i = 0; i < particleCount; i++) {
@@ -240,7 +235,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     heroTargetPositions[i * 3 + 1] = tempPosition.y;
                     heroTargetPositions[i * 3 + 2] = tempPosition.z;
                 }
-
                 for (let i = 0; i < particleCount; i++) {
                     const i3 = i * 3;
                     const radius = 10;
@@ -251,121 +245,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     positions[i3 + 2] = radius * Math.cos(phi);
                 }
                 heroInitialPositions.set(positions);
-
                 geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
                 const material = new THREE.PointsMaterial({ color: 0x3b82f6, size: 0.035, transparent: true, opacity: 0 });
                 heroParticles = new THREE.Points(geometry, material);
                 heroScene.add(heroParticles);
-                
                 gsap.to(heroParticles.material, {opacity: 1, duration: 1});
             }
         );
-
         heroCamera.position.z = 10;
-        
         const heroTimeline = gsap.timeline({ scrollTrigger: { trigger: "#hero-section", start: "top top", end: "bottom bottom", scrub: 1 } });
         heroTimeline.to({}, { duration: 1, onUpdate: function() { const progress = this.progress(); if (heroParticles) { const positions = heroParticles.geometry.attributes.position.array; for (let i = 0; i < particleCount; i++) { const i3 = i * 3; positions[i3] = THREE.MathUtils.lerp(heroInitialPositions[i3], heroTargetPositions[i3], progress); positions[i3 + 1] = THREE.MathUtils.lerp(heroInitialPositions[i3+1], heroTargetPositions[i3+1], progress); positions[i3 + 2] = THREE.MathUtils.lerp(heroInitialPositions[i3+2], heroTargetPositions[i3+2], progress); } heroParticles.geometry.attributes.position.needsUpdate = true; } } }, 0);
         heroTimeline.to({}, { duration: 1, onUpdate: function() { const progress = this.progress(); if (heroParticles) { const positions = heroParticles.geometry.attributes.position.array; for (let i = 0; i < particleCount; i++) { const i3 = i * 3; const dismemberedX = heroTargetPositions[i3] * (1 + progress * 5); const dismemberedY = heroTargetPositions[i3+1] * (1 + progress * 5); const dismemberedZ = heroTargetPositions[i3+2] * (1 + progress * 5); positions[i3] = dismemberedX; positions[i3 + 1] = dismemberedY; positions[i3 + 2] = dismemberedZ; } heroParticles.geometry.attributes.position.needsUpdate = true; heroParticles.material.opacity = 1 - progress; } } }, 1);
-        heroTimeline.to("#hero-text", { opacity: 1, duration: 0.5 }, 1.5);
-        animateHero();
-    }
-    function animateHero() { requestAnimationFrame(animateHero); if (heroRenderer) { if (heroParticles && !ScrollTrigger.isScrolling) heroParticles.rotation.y += 0.0001; heroRenderer.render(heroScene, heroCamera); } }
-    window.addEventListener('resize', () => { if(heroRenderer) { heroCamera.aspect = window.innerWidth / window.innerHeight; heroCamera.updateProjectionMatrix(); heroRenderer.setSize(window.innerWidth, window.innerHeight); } }, false);
-    initHeroAnimation();
-    
-    // --- NEW Interactive Solution Section Animation ---
-    const solutionStepsData = [ { title: "Data Engineering", description: "From raw, complex data sources to actionable, time-series insights." }, { title: "Feature Preprocessing", description: "Utilizing Weight of Evidence (WoE) and Information Value (IV) for powerful feature selection." }, { title: "Cohort Discovery", description: "Personalized risk assessment by segmenting borrowers into financial archetypes using K-Means clustering." }, { title: "Dynamic Calibration", description: "Solving Ordinary Differential Equations (ODEs) to model dynamic risk factors." }, { title: "Final Model Training", description: "Training cohort-specific ElasticNet models for maximum accuracy and fairness." } ];
-    const stepsContainer = document.getElementById('solution-steps');
-    solutionStepsData.forEach((step, i) => { stepsContainer.innerHTML += `<div class="step-content" id="step-${i}"><h3 class="text-3xl font-bold mb-3">${step.title}</h3><p class="text-slate-400">${step.description}</p></div>`; });
-    
-    let vizScene, vizCamera, vizRenderer, dataOrb, path, nodes = [];
-    
-    function initSolutionViz() {
-        const container = document.getElementById('solution-viz');
-        if(!container) return;
-        vizScene = new THREE.Scene();
-        vizCamera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-        vizRenderer = new THREE.WebGLRenderer({ alpha: true });
-        vizRenderer.setSize(container.clientWidth, container.clientHeight);
-        container.appendChild(vizRenderer.domElement);
-        vizCamera.position.set(0, 0, 10);
-
-        // Create the motion path
-        const curve = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(0, 6, 0),
-            new THREE.Vector3(2, 3, 0),
-            new THREE.Vector3(-2, 0, 0),
-            new THREE.Vector3(2, -3, 0),
-            new THREE.Vector3(0, -6, 0)
-        ]);
-        const points = curve.getPoints(50);
-        const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        const material = new THREE.LineBasicMaterial({ color: 0x475569, transparent: true, opacity: 0.5 });
-        path = new THREE.Line(geometry, material);
-        vizScene.add(path);
-
-        // Create the nodes for each stage
-        const nodeGeo = new THREE.SphereGeometry(0.3, 32, 32);
-        for(let i = 0; i < 5; i++) {
-            const nodeMat = new THREE.MeshBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.5 });
-            const node = new THREE.Mesh(nodeGeo, nodeMat);
-            const pointOnCurve = curve.getPoint(i / 4);
-            node.position.copy(pointOnCurve);
-            nodes.push(node);
-            vizScene.add(node);
-        }
-
-        // Create the main data orb
-        const orbGeo = new THREE.SphereGeometry(0.2, 32, 32);
-        const orbMat = new THREE.MeshBasicMaterial({ color: 0x3b82f6 });
-        dataOrb = new THREE.Mesh(orbGeo, orbMat);
-        vizScene.add(dataOrb);
-
-        // GSAP ScrollTrigger timeline to move the orb
-        const tl = gsap.timeline({
-            scrollTrigger: {
-                trigger: "#solution-section-container",
-                start: "top top",
-                end: "bottom bottom",
-                scrub: 1
-            }
-        });
-
-        tl.to(dataOrb.position, {
-            motionPath: {
-                path: curve.getPoints(50).map(p => ({x: p.x, y: p.y})),
-                alignOrigin: [0.5, 0.5]
-            },
-            duration: 1
-        });
-
-        const stepContents = document.querySelectorAll(".step-content");
-        stepContents.forEach((step, i) => { 
-            ScrollTrigger.create({ 
-                trigger: step, 
-                start: "top center", 
-                end: "bottom center", 
-                toggleClass: "is-active",
-                onEnter: () => animateNode(i),
-                onEnterBack: () => animateNode(i),
-            }); 
-        });
-
-        animateViz();
-    }
-
-    function animateNode(index) {
-        nodes.forEach((node, i) => {
-            const isActive = i === index;
-            gsap.to(node.material, { color: new THREE.Color(isActive ? 0x3b82f6 : 0x94a3b8), duration: 0.5 });
-            gsap.to(node.scale, { x: isActive ? 1.5 : 1, y: isActive ? 1.5 : 1, z: isActive ? 1.5 : 1, duration: 0.5, ease: "back.out(1.7)" });
-        });
-    }
-
-    function animateViz() {
-        requestAnimationFrame(animateViz);
-        if (vizRenderer) vizRenderer.render(vizScene, vizCamera);
-    }
-    
-    initSolutionViz();
-});
+        heroTimeline.to("#hero-text", { opacity: 1, duration: 0.5 },
