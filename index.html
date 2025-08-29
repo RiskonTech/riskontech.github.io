@@ -6,107 +6,10 @@
     <title>RISKON - Credit Risk Assessment</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0a0a0a;
-            color: #e2e8f0;
-            overflow-x: hidden;
-        }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .risk-low { color: #22c55e; }
-        .risk-medium { color: #f59e0b; }
-        .risk-high { color: #ef4444; }
-        .status-early { color: #22c55e; }
-        .status-late { color: #ef4444; }
-        .status-ontime { color: #3b82f6; }
-        
-        #solution-section-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            min-height: 500vh; /* Increased height for smoother step transitions */
-        }
-        #solution-steps {
-            position: relative;
-        }
-        .step-content {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            opacity: 0.2;
-            transform: translateY(20px);
-            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
-        }
-        .step-content.is-active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        #solution-viz-sticky-container {
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        #solution-viz {
-            width: 100%;
-            height: 80vh; /* Increased height for SVG */
-        }
-
-        /* SVG Styles */
-        .svg-node circle {
-            stroke-width: 2;
-            stroke: #475569;
-            fill: #1e293b;
-            transition: all 0.3s ease-in-out;
-        }
-        .svg-node text {
-            fill: #94a3b8;
-            font-size: 14px;
-            font-weight: 500;
-            text-anchor: middle;
-            transition: fill 0.3s ease-in-out;
-        }
-        .svg-connector {
-            stroke: #475569;
-            stroke-width: 2;
-            fill: none;
-        }
-        .svg-arrow {
-            fill: #475569;
-            transition: fill 0.3s ease-in-out;
-        }
-
-        /* Active State for SVG */
-        .svg-node.is-active circle {
-            stroke: #3b82f6;
-            fill: #3b82f633;
-        }
-        .svg-node.is-active text {
-            fill: #e2e8f0;
-        }
-        .svg-connector.is-active {
-            stroke: #3b82f6;
-        }
-        .svg-arrow.is-active {
-            fill: #3b82f6;
-        }
-
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body class="antialiased">
 
-    <!-- Landing Page -->
     <div id="landing-page">
         <header class="fixed top-0 left-0 right-0 z-20 p-4">
             <div class="container mx-auto flex justify-between items-center">
@@ -115,7 +18,6 @@
         </header>
 
         <main>
-            <!-- Hero Section -->
             <section id="hero-section" class="h-[300vh] relative">
                 <div class="sticky top-0 h-screen flex items-center justify-center text-center overflow-hidden">
                     <div class="absolute inset-0 z-0" id="hero-animation"></div>
@@ -126,16 +28,13 @@
                 </div>
             </section>
 
-            <!-- The NEW Interactive RISKON Solution Section -->
             <section class="relative bg-black text-white container mx-auto px-4">
                 <div id="solution-section-container">
                     <div id="solution-steps" class="pl-8">
-                        <!-- Steps will be injected here -->
-                    </div>
+                        </div>
                     <div id="solution-viz-sticky-container">
                         <div id="solution-viz">
                             <svg width="100%" height="100%" viewBox="0 0 200 600">
-                                <!-- Define Arrowhead Marker -->
                                 <defs>
                                     <marker id="arrowhead-inactive" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                                         <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569" />
@@ -144,30 +43,11 @@
                                         <path d="M 0 0 L 10 5 L 0 10 z" fill="#3b82f6" />
                                     </marker>
                                 </defs>
-
-                                <!-- Nodes -->
-                                <g id="svg-node-0" class="svg-node is-active">
-                                    <circle cx="100" cy="50" r="40"/>
-                                    <text x="100" y="55">Data Engineering</text>
-                                </g>
-                                <g id="svg-node-1" class="svg-node">
-                                    <circle cx="100" cy="170" r="40"/>
-                                    <text x="100" y="175">Preprocessing</text>
-                                </g>
-                                <g id="svg-node-2" class="svg-node">
-                                    <circle cx="100" cy="290" r="40"/>
-                                    <text x="100" y="295">Cohort Discovery</text>
-                                </g>
-                                <g id="svg-node-3" class="svg-node">
-                                    <circle cx="100" cy="410" r="40"/>
-                                    <text x="100" y="415">Calibration</text>
-                                </g>
-                                <g id="svg-node-4" class="svg-node">
-                                    <circle cx="100" cy="530" r="40"/>
-                                    <text x="100" y="535">Final Model</text>
-                                </g>
-
-                                <!-- Connectors -->
+                                <g id="svg-node-0" class="svg-node is-active"><circle cx="100" cy="50" r="40"/><text x="100" y="55">Data Engineering</text></g>
+                                <g id="svg-node-1" class="svg-node"><circle cx="100" cy="170" r="40"/><text x="100" y="175">Preprocessing</text></g>
+                                <g id="svg-node-2" class="svg-node"><circle cx="100" cy="290" r="40"/><text x="100" y="295">Cohort Discovery</text></g>
+                                <g id="svg-node-3" class="svg-node"><circle cx="100" cy="410" r="40"/><text x="100" y="415">Calibration</text></g>
+                                <g id="svg-node-4" class="svg-node"><circle cx="100" cy="530" r="40"/><text x="100" y="535">Final Model</text></g>
                                 <path id="svg-connector-0" class="svg-connector" d="M 100 90 L 100 130" marker-end="url(#arrowhead-inactive)"></path>
                                 <path id="svg-connector-1" class="svg-connector" d="M 100 210 L 100 250" marker-end="url(#arrowhead-inactive)"></path>
                                 <path id="svg-connector-2" class="svg-connector" d="M 100 330 L 100 370" marker-end="url(#arrowhead-inactive)"></path>
@@ -187,350 +67,34 @@
         </main>
     </div>
 
-    <!-- People Monitoring List Page -->
-    <div id="monitoring-page" class="hidden min-h-screen p-4 sm:p-6 lg:p-8">
+    <div id="monitoring-page" class="hidden min-h-screen p-4 sm:p-6 lg:p-8 bg-gray-900">
         <div class="container mx-auto">
             <button id="back-to-landing-btn" class="mb-6 text-blue-400 hover:text-blue-300">&larr; Back to Home</button>
             <h2 class="text-3xl font-bold text-white mb-6">People Monitoring List</h2>
-            <div id="applicant-list" class="space-y-3"></div>
+            <div id="applicant-list" class="space-y-3">
+                </div>
         </div>
     </div>
 
-    <!-- Personalized Report Page -->
-    <div id="report-page" class="hidden min-h-screen p-4 sm:p-6 lg:p-8">
-        <div class="container mx-auto">
-            <button id="back-to-monitoring-btn" class="mb-6 text-blue-400 hover:text-blue-300">&larr; Back to Monitoring List</button>
-            <div id="report-content"></div>
+    <div id="report-page" class="hidden min-h-screen p-4 sm:p-6 lg:p-8 bg-gray-200">
+         <div class="container mx-auto">
+            <button id="back-to-monitoring-btn" class="mb-6 text-blue-600 hover:text-blue-800 font-bold">&larr; Back to Monitoring List</button>
+            <div id="report-content-wrapper">
+                </div>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FontLoader.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/geometries/TextGeometry.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/BufferGeometryUtils.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/math/MeshSurfaceSampler.js"></script>
+    
+    <script src="data.js"></script>
+    <script src="script.js"></script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            gsap.registerPlugin(ScrollTrigger);
-
-            // --- Data ---
-            const reportData = [
-                {"Cohort":2.0,"Applicant_ID":173563.0,"Risk_Category":"Low","Data_Type":"Historical","Month_Offset":-5,"Installment_Due":10871.55,"Amount_Paid":10871.55,"Payment_Status":"69 days early","Predicted_Prob_Default":0.00010592998503031444},
-                {"Cohort":2.0,"Applicant_ID":173563.0,"Risk_Category":"Low","Data_Type":"Historical","Month_Offset":-4,"Installment_Due":10871.55,"Amount_Paid":10871.55,"Payment_Status":"69 days early","Predicted_Prob_Default":0.00011492611169809205},
-                {"Cohort":2.0,"Applicant_ID":173563.0,"Risk_Category":"Low","Data_Type":"Historical","Month_Offset":-3,"Installment_Due":10871.55,"Amount_Paid":10871.55,"Payment_Status":"68 days early","Predicted_Prob_Default":0.00013520010732567318},
-                {"Cohort":2.0,"Applicant_ID":173563.0,"Risk_Category":"Low","Data_Type":"Historical","Month_Offset":-2,"Installment_Due":10871.55,"Amount_Paid":10871.55,"Payment_Status":"98 days early","Predicted_Prob_Default":4.247519506851796e-05},
-                {"Cohort":2.0,"Applicant_ID":173563.0,"Risk_Category":"Low","Data_Type":"Historical","Month_Offset":-1,"Installment_Due":10871.55,"Amount_Paid":10871.55,"Payment_Status":"97 days early","Predicted_Prob_Default":8.79481745438587e-05},
-                {"Cohort":2.0,"Applicant_ID":173563.0,"Risk_Category":"Low","Data_Type":"Historical","Month_Offset":0,"Installment_Due":10871.55,"Amount_Paid":10871.55,"Payment_Status":"97 days early","Predicted_Prob_Default":0.0001026000027282862},
-                {"Cohort":2.0,"Applicant_ID":173563.0,"Risk_Category":"Low","Data_Type":"Forecast","Month_Offset":1,"Installment_Due":null,"Amount_Paid":null,"Payment_Status":"N/A","Predicted_Prob_Default":0.0001026000027282862},
-                {"Cohort":2.0,"Applicant_ID":146353.0,"Risk_Category":"Low","Data_Type":"Historical","Month_Offset":-12,"Installment_Due":13289.805,"Amount_Paid":13289.805,"Payment_Status":"11 days early","Predicted_Prob_Default":0.00011535499652382},
-                {"Cohort":2.0,"Applicant_ID":146353.0,"Risk_Category":"Low","Data_Type":"Historical","Month_Offset":-11,"Installment_Due":13289.805,"Amount_Paid":13289.805,"Payment_Status":"12 days early","Predicted_Prob_Default":0.00011535499652382},
-                {"Cohort":2.0,"Applicant_ID":146353.0,"Risk_Category":"Low","Data_Type":"Historical","Month_Offset":-10,"Installment_Due":13289.805,"Amount_Paid":13289.805,"Payment_Status":"12 days early","Predicted_Prob_Default":0.00011535499652382},
-                {"Cohort":2.0,"Applicant_ID":146353.0,"Risk_Category":"Low","Data_Type":"Historical","Month_Offset":-9,"Installment_Due":13289.805,"Amount_Paid":13289.805,"Payment_Status":"11 days early","Predicted_Prob_Default":0.00011535499652382},
-                {"Cohort":2.0,"Applicant_ID":146353.0,"Risk_Category":"Low","Data_Type":"Historical","Month_Offset":-8,"Installment_Due":13289.805,"Amount_Paid":13289.805,"Payment_Status":"11 days early","Predicted_Prob_Default":0.00011535499652382},
-                {"Cohort":2.0,"Applicant_ID":146353.0,"Risk_Category":"Low","Data_Type":"Historical","Month_Offset":-7,"Installment_Due":13289.805,"Amount_Paid":13289.805,"Payment_Status":"11 days early","Predicted_Prob_Default":0.00011535499652382},
-                {"Cohort":2.0,"Applicant_ID":146353.0,"Risk_Category":"Low","Data_Type":"Historical","Month_Offset":-6,"Installment_Due":13289.805,"Amount_Paid":13289.805,"Payment_Status":"11 days early","Predicted_Prob_Default":0.00011535499652382},
-                {"Cohort":2.0,"Applicant_ID":146353.0,"Risk_Category":"Low","Data_Type":"Historical","Month_Offset":-5,"Installment_Due":13289.805,"Amount_Paid":13289.805,"Payment_Status":"11 days early","Predicted_Prob_Default":0.00011535499652382},
-                {"Cohort":2.0,"Applicant_ID":146353.0,"Risk_Category":"Low","Data_Type":"Historical","Month_Offset":-4,"Installment_Due":13289.805,"Amount_Paid":13289.805,"Payment_Status":"11 days early","Predicted_Prob_Default":0.00011535499652382},
-                {"Cohort":2.0,"Applicant_ID":146353.0,"Risk_Category":"Low","Data_Type":"Historical","Month_Offset":-3,"Installment_Due":13289.805,"Amount_Paid":13289.805,"Payment_Status":"11 days early","Predicted_Prob_Default":0.00011535499652382},
-                {"Cohort":2.0,"Applicant_ID":146353.0,"Risk_Category":"Low","Data_Type":"Historical","Month_Offset":-2,"Installment_Due":13289.805,"Amount_Paid":13289.805,"Payment_Status":"11 days early","Predicted_Prob_Default":0.00011535499652382},
-                {"Cohort":2.0,"Applicant_ID":146353.0,"Risk_Category":"Low","Data_Type":"Historical","Month_Offset":-1,"Installment_Due":13289.805,"Amount_Paid":13289.805,"Payment_Status":"11 days early","Predicted_Prob_Default":0.00011535499652382},
-                {"Cohort":2.0,"Applicant_ID":146353.0,"Risk_Category":"Low","Data_Type":"Historical","Month_Offset":0,"Installment_Due":13289.805,"Amount_Paid":13289.805,"Payment_Status":"11 days early","Predicted_Prob_Default":0.00011535499652382},
-                {"Cohort":2.0,"Applicant_ID":146353.0,"Risk_Category":"Low","Data_Type":"Forecast","Month_Offset":1,"Installment_Due":null,"Amount_Paid":null,"Payment_Status":"N/A","Predicted_Prob_Default":0.00011535499652382},
-                {"Cohort":0.0,"Applicant_ID":342618.0,"Risk_Category":"High","Data_Type":"Historical","Month_Offset":-11,"Installment_Due":11279.52,"Amount_Paid":11279.52,"Payment_Status":"24 days late","Predicted_Prob_Default":0.9745521565642759},
-                {"Cohort":0.0,"Applicant_ID":342618.0,"Risk_Category":"High","Data_Type":"Historical","Month_Offset":-11,"Installment_Due":606.69,"Amount_Paid":606.69,"Payment_Status":"18 days late","Predicted_Prob_Default":0.9745521565642759},
-                {"Cohort":0.0,"Applicant_ID":342618.0,"Risk_Category":"High","Data_Type":"Historical","Month_Offset":-11,"Installment_Due":606.69,"Amount_Paid":606.69,"Payment_Status":"12 days late","Predicted_Prob_Default":0.9745521565642759},
-                {"Cohort":0.0,"Applicant_ID":342618.0,"Risk_Category":"High","Data_Type":"Historical","Month_Offset":-11,"Installment_Due":606.69,"Amount_Paid":606.69,"Payment_Status":"8 days late","Predicted_Prob_Default":0.9745521565642759},
-                {"Cohort":0.0,"Applicant_ID":342618.0,"Risk_Category":"High","Data_Type":"Historical","Month_Offset":-11,"Installment_Due":606.69,"Amount_Paid":606.69,"Payment_Status":"3 days late","Predicted_Prob_Default":0.9745521565642759},
-                {"Cohort":0.0,"Applicant_ID":342618.0,"Risk_Category":"High","Data_Type":"Forecast","Month_Offset":1,"Installment_Due":null,"Amount_Paid":null,"Payment_Status":"N/A","Predicted_Prob_Default":0.9745521565642759},
-                {"Cohort":6.0,"Applicant_ID":172994.0,"Risk_Category":"High","Data_Type":"Historical","Month_Offset":-8,"Installment_Due":6546.33,"Amount_Paid":6064.29,"Payment_Status":"25 days late","Predicted_Prob_Default":0.8674746073711317}
-            ];
-            const applicants = {};
-            reportData.forEach(row => {
-                if (!applicants[row.Applicant_ID]) { applicants[row.Applicant_ID] = []; }
-                applicants[row.Applicant_ID].push(row);
-            });
-
-            // --- Page Elements ---
-            const landingPage = document.getElementById('landing-page');
-            const monitoringPage = document.getElementById('monitoring-page');
-            const reportPage = document.getElementById('report-page');
-            const demoBtn = document.getElementById('demo-btn');
-            const backToLandingBtn = document.getElementById('back-to-landing-btn');
-            const backToMonitoringBtn = document.getElementById('back-to-monitoring-btn');
-            const applicantListContainer = document.getElementById('applicant-list');
-            const reportContentContainer = document.getElementById('report-content');
-            let currentChart = null;
-
-            // --- Navigation ---
-            function showPage(page) {
-                landingPage.classList.add('hidden');
-                monitoringPage.classList.add('hidden');
-                reportPage.classList.add('hidden');
-                page.classList.remove('hidden');
-                window.scrollTo(0, 0);
-            }
-            demoBtn.addEventListener('click', () => { populateApplicantList(); showPage(monitoringPage); });
-            backToLandingBtn.addEventListener('click', () => showPage(landingPage));
-            backToMonitoringBtn.addEventListener('click', () => showPage(monitoringPage));
-
-            // --- Populate Applicant List ---
-            function populateApplicantList() {
-                applicantListContainer.innerHTML = '';
-                Object.keys(applicants).forEach(applicantId => {
-                    const applicantData = applicants[applicantId];
-                    const latestRecord = applicantData.reduce((latest, current) => current.Month_Offset > latest.Month_Offset ? current : latest);
-                    const riskPercentage = (latestRecord.Predicted_Prob_Default * 100).toFixed(2);
-                    const riskCategory = latestRecord.Risk_Category;
-                    const riskColorClass = riskCategory === 'Low' ? 'text-green-400' : riskCategory === 'Medium' ? 'text-yellow-400' : 'text-red-400';
-                    const item = document.createElement('div');
-                    item.className = 'glass-card p-4 rounded-lg flex justify-between items-center cursor-pointer transition duration-300 hover:bg-gray-800/50';
-                    item.innerHTML = `<div><p class="text-slate-400 text-sm">Applicant ID</p><p class="text-white font-semibold text-lg">${parseInt(applicantId)}</p></div><div class="text-right"><p class="text-slate-400 text-sm">Risk Percentage</p><p class="font-semibold text-lg ${riskColorClass}">${riskPercentage}%</p></div>`;
-                    item.addEventListener('click', () => { createReport(applicantId); showPage(reportPage); });
-                    applicantListContainer.appendChild(item);
-                });
-            }
-
-            // --- Create Personalized Report ---
-            function createReport(applicantId) {
-                const applicantData = applicants[applicantId].sort((a, b) => a.Month_Offset - b.Month_Offset);
-                const latestRecord = applicantData[applicantData.length - 1];
-                const riskPercentage = (latestRecord.Predicted_Prob_Default * 100);
-                const riskCategory = latestRecord.Risk_Category;
-                const riskColorClass = riskCategory === 'Low' ? 'risk-low' : riskCategory === 'Medium' ? 'risk-medium' : 'risk-high';
-                reportContentContainer.innerHTML = `<div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><div class="lg:col-span-1 space-y-6"><div class="glass-card p-6 rounded-xl text-center"><h3 class="text-2xl font-bold text-white mb-2">Applicant ${parseInt(applicantId)}</h3><p class="text-lg font-semibold ${riskColorClass}">${riskCategory} Risk</p></div><div class="glass-card p-6 rounded-xl"><h4 class="text-xl font-semibold text-white mb-4">Key Metrics</h4><div class="space-y-4"><div><p class="text-sm text-slate-400">Predicted Default Probability</p><p class="text-2xl font-bold text-white" id="metric-prob">${riskPercentage.toFixed(4)}%</p></div><div><p class="text-sm text-slate-400">Last Installment Due</p><p class="text-2xl font-bold text-white" id="metric-due">${latestRecord.Installment_Due ? '$' + latestRecord.Installment_Due.toFixed(2) : 'N/A'}</p></div><div><p class="text-sm text-slate-400">Last Amount Paid</p><p class="text-2xl font-bold text-white" id="metric-paid">${latestRecord.Amount_Paid ? '$' + latestRecord.Amount_Paid.toFixed(2) : 'N/A'}</p></div></div></div></div><div class="lg:col-span-2 space-y-6"><div class="glass-card p-6 rounded-xl"><h4 class="text-xl font-semibold text-white mb-4">Risk Score Trend</h4><canvas id="riskChart"></canvas></div><div class="glass-card p-6 rounded-xl"><h4 class="text-xl font-semibold text-white mb-4">Payment History</h4><div id="payment-history" class="space-y-3 max-h-60 overflow-y-auto"></div></div></div></div>`;
-                const paymentHistoryContainer = document.getElementById('payment-history');
-                const historicalData = applicantData.filter(d => d.Data_Type === 'Historical');
-                if (historicalData.length > 0) {
-                    historicalData.reverse().forEach(record => {
-                        let statusClass = '';
-                        if (record.Payment_Status) {
-                            if (record.Payment_Status.includes('early')) statusClass = 'status-early';
-                            else if (record.Payment_Status.includes('late')) statusClass = 'status-late';
-                            else statusClass = 'status-ontime';
-                        }
-                        const item = document.createElement('div');
-                        item.className = 'flex justify-between items-center bg-gray-800/30 p-3 rounded-md';
-                        item.innerHTML = `<p class="text-slate-300">Month Offset: ${record.Month_Offset}</p><p class="font-semibold ${statusClass}">${record.Payment_Status || 'N/A'}</p>`;
-                        paymentHistoryContainer.appendChild(item);
-                    });
-                } else { paymentHistoryContainer.innerHTML = `<p class="text-slate-400">No historical payment data available.</p>`; }
-                const ctx = document.getElementById('riskChart').getContext('2d');
-                if (currentChart) { currentChart.destroy(); }
-                const labels = applicantData.map(d => `Month ${d.Month_Offset}`);
-                const dataPoints = applicantData.map(d => d.Predicted_Prob_Default * 100);
-                currentChart = new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [{ label: 'Predicted Default Probability (%)', data: dataPoints, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.4, pointBackgroundColor: '#3b82f6', pointRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } }, x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } } }, plugins: { legend: { labels: { color: '#e2e8f0' } } } } });
-                gsap.from("#metric-prob, #metric-due, #metric-paid", { textContent: 0, duration: 1.5, ease: "power1.inOut", snap: { textContent: 1 }, stagger: 0.2 });
-            }
-
-            // --- Hero Animation (Three.js) ---
-            let heroScene, heroCamera, heroRenderer, heroParticles, heroTargetPositions, heroInitialPositions;
-            function initHeroAnimation() {
-                const container = document.getElementById('hero-animation');
-                heroScene = new THREE.Scene();
-                heroCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-                heroRenderer = new THREE.WebGLRenderer({ alpha: true });
-                heroRenderer.setSize(window.innerWidth, window.innerHeight);
-                container.appendChild(heroRenderer.domElement);
-
-                const particleCount = 8000;
-                const geometry = new THREE.BufferGeometry();
-                const positions = new Float32Array(particleCount * 3);
-                heroTargetPositions = new Float32Array(particleCount * 3);
-                heroInitialPositions = new Float32Array(particleCount * 3);
-
-                const fontLoader = new THREE.FontLoader();
-                fontLoader.load('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/fonts/helvetiker_bold.typeface.json', 
-                    function (font) {
-                        const textGeometry = new THREE.TextGeometry('RISKON', {
-                            font: font, size: 1.5, height: 0.2, curveSegments: 12,
-                        });
-                        textGeometry.center();
-                        
-                        const sampler = new THREE.MeshSurfaceSampler(new THREE.Mesh(textGeometry)).build();
-                        const targetPoints = [];
-                        const tempPosition = new THREE.Vector3();
-                        for (let i = 0; i < particleCount; i++) {
-                            sampler.sample(tempPosition);
-                            targetPoints.push(tempPosition.clone());
-                        }
-
-                        for (let i = 0; i < particleCount; i++) {
-                            const i3 = i * 3;
-                            const p = targetPoints[i];
-                            heroTargetPositions[i3] = p.x;
-                            heroTargetPositions[i3 + 1] = p.y;
-                            heroTargetPositions[i3 + 2] = p.z;
-                        }
-
-                        for (let i = 0; i < particleCount; i++) {
-                            const i3 = i * 3;
-                            const radius = 10;
-                            const theta = 2 * Math.PI * Math.random();
-                            const phi = Math.acos(2 * Math.random() - 1);
-                            positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
-                            positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-                            positions[i3 + 2] = radius * Math.cos(phi);
-                        }
-                        heroInitialPositions.set(positions);
-
-                        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-                        const material = new THREE.PointsMaterial({ color: 0x3b82f6, size: 0.035, transparent: true, opacity: 0 });
-                        heroParticles = new THREE.Points(geometry, material);
-                        heroScene.add(heroParticles);
-                        
-                        gsap.to(heroParticles.material, {opacity: 1, duration: 1});
-                    },
-                    undefined,
-                    (error) => console.error('An error occurred while loading the font:', error)
-                );
-
-                heroCamera.position.z = 10;
-                
-                const heroTimeline = gsap.timeline({
-                    scrollTrigger: {
-                        trigger: "#hero-section",
-                        start: "top top",
-                        end: "bottom bottom",
-                        scrub: 1,
-                    }
-                });
-
-                // Animate from chaos to RISKON text
-                heroTimeline.to({}, {
-                    duration: 1, // Corresponds to the first 50% of the scroll
-                    onUpdate: function() {
-                        const progress = this.progress();
-                        if (heroParticles) {
-                            const positions = heroParticles.geometry.attributes.position.array;
-                            for (let i = 0; i < particleCount; i++) {
-                                const i3 = i * 3;
-                                positions[i3] = THREE.MathUtils.lerp(heroInitialPositions[i3], heroTargetPositions[i3], progress);
-                                positions[i3 + 1] = THREE.MathUtils.lerp(heroInitialPositions[i3+1], heroTargetPositions[i3+1], progress);
-                                positions[i3 + 2] = THREE.MathUtils.lerp(heroInitialPositions[i3+2], heroTargetPositions[i3+2], progress);
-                            }
-                            heroParticles.geometry.attributes.position.needsUpdate = true;
-                        }
-                    }
-                }, 0);
-
-                // Animate from RISKON text to dismembered state and fade in text
-                heroTimeline.to({}, {
-                    duration: 1, // Corresponds to the second 50% of the scroll
-                    onUpdate: function() {
-                        const progress = this.progress();
-                        if (heroParticles) {
-                            const positions = heroParticles.geometry.attributes.position.array;
-                            for (let i = 0; i < particleCount; i++) {
-                                const i3 = i * 3;
-                                const dismemberedX = heroTargetPositions[i3] * (1 + progress * 5);
-                                const dismemberedY = heroTargetPositions[i3+1] * (1 + progress * 5);
-                                const dismemberedZ = heroTargetPositions[i3+2] * (1 + progress * 5);
-                                positions[i3] = dismemberedX;
-                                positions[i3 + 1] = dismemberedY;
-                                positions[i3 + 2] = dismemberedZ;
-                            }
-                            heroParticles.geometry.attributes.position.needsUpdate = true;
-                            heroParticles.material.opacity = 1 - progress;
-                        }
-                    }
-                }, 1);
-
-                heroTimeline.to("#hero-text", { opacity: 1, duration: 0.5 }, 1.5);
-
-
-                animateHero();
-            }
-            function animateHero() {
-                requestAnimationFrame(animateHero);
-                if (heroRenderer) {
-                    if (heroParticles && !ScrollTrigger.isScrolling) heroParticles.rotation.y += 0.0001;
-                    heroRenderer.render(heroScene, heroCamera);
-                }
-            }
-            window.addEventListener('resize', () => {
-                if(heroRenderer) {
-                    heroCamera.aspect = window.innerWidth / window.innerHeight;
-                    heroCamera.updateProjectionMatrix();
-                    heroRenderer.setSize(window.innerWidth, window.innerHeight);
-                }
-            }, false);
-            initHeroAnimation();
-
-            // --- Interactive Solution Section Animation ---
-            const solutionStepsData = [
-                { title: "Data Engineering", description: "From raw, complex data sources to actionable, time-series insights." },
-                { title: "Feature Preprocessing", description: "Utilizing Weight of Evidence (WoE) and Information Value (IV) for powerful feature selection." },
-                { title: "Cohort Discovery", description: "Personalized risk assessment by segmenting borrowers into financial archetypes using K-Means clustering." },
-                { title: "Dynamic Calibration", description: "Solving Ordinary Differential Equations (ODEs) to model dynamic risk factors." },
-                { title: "Final Model Training", description: "Training cohort-specific ElasticNet models for maximum accuracy and fairness." }
-            ];
-            const stepsContainer = document.getElementById('solution-steps');
-            solutionStepsData.forEach((step, i) => {
-                stepsContainer.innerHTML += `<div class="step-content" id="step-${i}"><h3 class="text-3xl font-bold mb-3">${step.title}</h3><p class="text-slate-400">${step.description}</p></div>`;
-            });
-
-            const stepContents = document.querySelectorAll(".step-content");
-            stepContents.forEach((step, i) => {
-                ScrollTrigger.create({
-                    trigger: step,
-                    start: "top center",
-                    end: "bottom center",
-                    toggleClass: "is-active",
-                    onEnter: () => updateSolutionViz(i),
-                    onEnterBack: () => updateSolutionViz(i),
-                });
-            });
-
-            // --- Solution Viz (SVG) ---
-            const svgNodes = document.querySelectorAll('.svg-node');
-            const svgConnectors = document.querySelectorAll('.svg-connector');
-
-            function updateSolutionViz(index) {
-                // Update node active states
-                svgNodes.forEach((node, i) => {
-                    if (i <= index) {
-                        node.classList.add('is-active');
-                    } else {
-                        node.classList.remove('is-active');
-                    }
-                });
-
-                // Animate connectors
-                svgConnectors.forEach((connector, i) => {
-                    const pathLength = connector.getTotalLength();
-                    if (i < index) {
-                        gsap.to(connector, { 
-                            strokeDashoffset: 0, 
-                            strokeDasharray: pathLength, 
-                            duration: 0.5,
-                            onStart: () => {
-                                connector.setAttribute('marker-end', 'url(#arrowhead-active)');
-                            }
-                        });
-                    } else {
-                        gsap.to(connector, { 
-                            strokeDashoffset: pathLength, 
-                            strokeDasharray: pathLength, 
-                            duration: 0.5,
-                            onComplete: () => {
-                                connector.setAttribute('marker-end', 'url(#arrowhead-inactive)');
-                            }
-                        });
-                    }
-                });
-            }
-            
-            // Initialize connector animation states
-            svgConnectors.forEach(connector => {
-                const pathLength = connector.getTotalLength();
-                connector.style.strokeDasharray = pathLength;
-                connector.style.strokeDashoffset = pathLength;
-            });
-
-            // Initial call to set the first state
-            updateSolutionViz(0);
-        });
-    </script>
 </body>
 </html>
