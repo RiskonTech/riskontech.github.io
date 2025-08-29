@@ -80,9 +80,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     <div class="grid-container">
                         <div class="info-box">
                             <h3>RISKON Score</h3>
-                            <div style="text-align: center; padding: 20px 0;">
-                                <span id="cibil-score-span" style="font-size: 48px; font-weight: bold; color: #0073b1;">300</span><br>
-                                <span style="color: #555;">(CIBIL Equivalent)</span>
+                            <div class="cibil-gauge">
+                                <svg class="cibil-gauge-svg" viewBox="0 0 120 120">
+                                    <path class="cibil-gauge-track" d="M 20,100 A 40,40 0 1,1 100,100"></path>
+                                    <path id="cibil-gauge-bar" class="cibil-gauge-bar" d="M 20,100 A 40,40 0 1,1 100,100"></path>
+                                </svg>
+                                <div id="cibil-gauge-text" class="cibil-gauge-text">300</div>
                             </div>
                         </div>
                         <div class="info-box">
@@ -141,15 +144,33 @@ document.addEventListener('DOMContentLoaded', function () {
         reportContentWrapper.innerHTML = reportHTML;
         document.getElementById('download-pdf-btn').addEventListener('click', () => downloadReportAsPDF(applicantId));
 
-        // GSAP ANIMATIONS FOR THE REPORT
+        // --- GSAP ANIMATIONS FOR THE REPORT ---
         const tl = gsap.timeline();
-        const score = { value: 300 };
+        const scoreCounter = { value: 300 };
+        const gaugeBar = document.getElementById('cibil-gauge-bar');
+        const circumference = gaugeBar.getTotalLength();
+        const scorePercentage = (cibilScore - 300) / 600;
+        const finalOffset = circumference * (1 - scorePercentage);
+        
+        gaugeBar.style.strokeDasharray = circumference;
+        gaugeBar.style.strokeDashoffset = circumference;
         
         tl.to("#report-page-container", { opacity: 1, duration: 0.5 })
-          .to(score, { value: cibilScore, duration: 1, onUpdate: () => {
-              document.getElementById("cibil-score-span").textContent = Math.round(score.value);
-          }}, "-=0.2")
-          .from(".section", { opacity: 0, y: 30, stagger: 0.2, duration: 0.6 }, "-=0.8");
+          .to(scoreCounter, { 
+              value: cibilScore, 
+              duration: 1.5, 
+              ease: "power2.out",
+              onUpdate: () => {
+                  document.getElementById("cibil-gauge-text").textContent = Math.round(scoreCounter.value);
+              }
+          }, "-=0.2")
+          .to(gaugeBar, { 
+              strokeDashoffset: finalOffset, 
+              duration: 1.5, 
+              ease: "power2.out" 
+          }, "<")
+          .from(".section", { opacity: 0, y: 30, stagger: 0.2, duration: 0.6 }, "-=1.2")
+          .from(".graph-container img", { scale: 1.2, duration: 1, ease: "power2.out" }, "-=0.8");
     }
 
     // --- Handle Report Generation Click ---
@@ -161,7 +182,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         summaryContent.textContent = "Generating summary...";
         summaryContainer.classList.remove('hidden');
-        gsap.from(summaryContainer, { opacity: 0, y: 20, duration: 0.5 });
+        gsap.set(summaryContainer, { height: 'auto', opacity: 1 });
+        const autoHeight = gsap.getProperty(summaryContainer, "height");
+        gsap.from(summaryContainer, { height: 0, opacity: 0, duration: 0.6, ease: 'power2.out' });
+        
         generateBtn.style.display = 'none';
 
         setTimeout(() => { // Simulate API call delay
@@ -253,14 +277,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const solutionStepsData = [ { title: "Data Engineering", description: "From raw, complex data sources to actionable, time-series insights." }, { title: "Feature Preprocessing", description: "Utilizing Weight of Evidence (WoE) and Information Value (IV) for powerful feature selection." }, { title: "Cohort Discovery", description: "Personalized risk assessment by segmenting borrowers into financial archetypes using K-Means clustering." }, { title: "Dynamic Calibration", description: "Solving Ordinary Differential Equations (ODEs) to model dynamic risk factors." }, { title: "Final Model Training", description: "Training cohort-specific ElasticNet models for maximum accuracy and fairness." } ];
     const stepsContainer = document.getElementById('solution-steps');
     solutionStepsData.forEach((step, i) => { stepsContainer.innerHTML += `<div class="step-content" id="step-${i}"><h3 class="text-3xl font-bold mb-3">${step.title}</h3><p class="text-slate-400">${step.description}</p></div>`; });
-    const stepContents = document.querySelectorAll(".step-content");
-    stepContents.forEach((step, i) => { ScrollTrigger.create({ trigger: step, start: "top center", end: "bottom center", toggleClass: "is-active", onEnter: () => updateSolutionViz(i), onEnterBack: () => updateSolutionViz(i) }); });
-
-    // --- Solution Viz (Three.js) ---
-    let vizScene, vizCamera, vizRenderer, vizParticles, vizMaterial;
-    const vizParticleCount = 1500;
-    let currentVizState = -1;
-
+    
+    let vizScene, vizCamera, vizRenderer, dataOrb, path, nodes = [];
+    
     function initSolutionViz() {
         const container = document.getElementById('solution-viz');
         if(!container) return;
@@ -269,96 +288,84 @@ document.addEventListener('DOMContentLoaded', function () {
         vizRenderer = new THREE.WebGLRenderer({ alpha: true });
         vizRenderer.setSize(container.clientWidth, container.clientHeight);
         container.appendChild(vizRenderer.domElement);
+        vizCamera.position.set(0, 0, 10);
 
-        const geometry = new THREE.BufferGeometry();
-        const positions = new Float32Array(vizParticleCount * 3);
-        const colors = new Float32Array(vizParticleCount * 3);
-        for (let i = 0; i < vizParticleCount; i++) {
-            const i3 = i*3;
-            positions[i3] = (Math.random() - 0.5) * 15;
-            positions[i3+1] = (Math.random() - 0.5) * 15;
-            positions[i3+2] = (Math.random() - 0.5) * 15;
-            colors[i3] = 1; colors[i3+1] = 1; colors[i3+2] = 1;
+        // Create the motion path
+        const curve = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(0, 6, 0),
+            new THREE.Vector3(2, 3, 0),
+            new THREE.Vector3(-2, 0, 0),
+            new THREE.Vector3(2, -3, 0),
+            new THREE.Vector3(0, -6, 0)
+        ]);
+        const points = curve.getPoints(50);
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const material = new THREE.LineBasicMaterial({ color: 0x475569, transparent: true, opacity: 0.5 });
+        path = new THREE.Line(geometry, material);
+        vizScene.add(path);
+
+        // Create the nodes for each stage
+        const nodeGeo = new THREE.SphereGeometry(0.3, 32, 32);
+        for(let i = 0; i < 5; i++) {
+            const nodeMat = new THREE.MeshBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.5 });
+            const node = new THREE.Mesh(nodeGeo, nodeMat);
+            const pointOnCurve = curve.getPoint(i / 4);
+            node.position.copy(pointOnCurve);
+            nodes.push(node);
+            vizScene.add(node);
         }
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        
-        vizMaterial = new THREE.PointsMaterial({ size: 0.05, vertexColors: true, transparent: true });
-        vizParticles = new THREE.Points(geometry, vizMaterial);
-        vizScene.add(vizParticles);
-        vizCamera.position.z = 8;
-        updateSolutionViz(0);
+
+        // Create the main data orb
+        const orbGeo = new THREE.SphereGeometry(0.2, 32, 32);
+        const orbMat = new THREE.MeshBasicMaterial({ color: 0x3b82f6 });
+        dataOrb = new THREE.Mesh(orbGeo, orbMat);
+        vizScene.add(dataOrb);
+
+        // GSAP ScrollTrigger timeline to move the orb
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: "#solution-section-container",
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 1
+            }
+        });
+
+        tl.to(dataOrb.position, {
+            motionPath: {
+                path: curve.getPoints(50).map(p => ({x: p.x, y: p.y})),
+                alignOrigin: [0.5, 0.5]
+            },
+            duration: 1
+        });
+
+        const stepContents = document.querySelectorAll(".step-content");
+        stepContents.forEach((step, i) => { 
+            ScrollTrigger.create({ 
+                trigger: step, 
+                start: "top center", 
+                end: "bottom center", 
+                toggleClass: "is-active",
+                onEnter: () => animateNode(i),
+                onEnterBack: () => animateNode(i),
+            }); 
+        });
+
         animateViz();
+    }
+
+    function animateNode(index) {
+        nodes.forEach((node, i) => {
+            const isActive = i === index;
+            gsap.to(node.material, { color: new THREE.Color(isActive ? 0x3b82f6 : 0x94a3b8), duration: 0.5 });
+            gsap.to(node.scale, { x: isActive ? 1.5 : 1, y: isActive ? 1.5 : 1, z: isActive ? 1.5 : 1, duration: 0.5, ease: "back.out(1.7)" });
+        });
     }
 
     function animateViz() {
         requestAnimationFrame(animateViz);
-        if (vizRenderer) {
-            if(vizParticles) vizParticles.rotation.y += 0.0005;
-            vizRenderer.render(vizScene, vizCamera);
-        }
+        if (vizRenderer) vizRenderer.render(vizScene, vizCamera);
     }
     
-    function updateSolutionViz(index) {
-        if (index === currentVizState || !vizParticles) return;
-        currentVizState = index;
-        const positions = vizParticles.geometry.attributes.position.array;
-        const colors = vizParticles.geometry.attributes.color.array;
-        const tl = gsap.timeline({ onUpdate: () => { 
-            if(vizParticles) {
-                vizParticles.geometry.attributes.position.needsUpdate = true;
-                vizParticles.geometry.attributes.color.needsUpdate = true;
-            }
-        }});
-        
-        if (index === 0) { // Data Engineering
-             for(let i = 0; i < vizParticleCount; i++) {
-                const i3 = i*3;
-                tl.to(positions, { [i3]: (Math.random() - 0.5) * 2, [i3+1]: (Math.random() - 0.5) * 2, [i3+2]: (Math.random() - 0.5) * 10, duration: 1.5, ease: 'power2.inOut' }, "<" + Math.random() * 0.5);
-                tl.to(colors, { [i3]: 1, [i3+1]: 1, [i3+2]: 1, duration: 1 }, "<");
-            }
-        } else if (index === 1) { // Feature Preprocessing
-            for(let i = 0; i < vizParticleCount; i++) {
-                const i3 = i*3;
-                if (positions[i3] > 0.2) { // "Filter out" some particles
-                    tl.to(positions, { [i3]: 10, duration: 1, ease: 'power2.in' }, "<");
-                    tl.to(colors, { [i3]: 1, [i3+1]: 0.2, [i3+2]: 0.2, duration: 1 }, "<"); // Turn them red
-                } else {
-                    tl.to(colors, { [i3]: 0.2, [i3+1]: 0.5, [i3+2]: 1, duration: 1 }, "<"); // Turn others blue
-                }
-            }
-        } else if (index === 2) { // Cohort Discovery
-            for(let i = 0; i < vizParticleCount; i++) {
-                const i3 = i*3;
-                if (colors[i3] < 0.5) { // Only animate the "kept" blue particles
-                    const cluster = Math.floor(Math.random() * 3);
-                    const clusterX = (cluster - 1) * 4;
-                    tl.to(positions, { [i3]: clusterX + (Math.random() - 0.5) * 2, [i3+1]: (Math.random() - 0.5) * 2, [i3+2]: (Math.random() - 0.5) * 2, duration: 1.5, ease: 'power2.inOut' }, "<" + Math.random() * 0.5);
-                }
-            }
-        } else if (index === 3) { // Dynamic Calibration
-             for(let i = 0; i < vizParticleCount; i++) {
-                const i3 = i*3;
-                 if (colors[i3] < 0.5) {
-                    tl.to(positions, { [i3+1]: positions[i3+1] + Math.sin(positions[i3] + Date.now()*0.001) * 0.1, duration: 1.5, ease: 'elastic.out(1, 0.3)' }, "<" + Math.random() * 0.5);
-                    tl.to(colors, { [i3]: 1, [i3+1]: 0.6, [i3+2]: 0, duration: 1 }, "<"); // Turn them orange
-                 }
-            }
-        } else if (index === 4) { // Final Model
-            for(let i = 0; i < vizParticleCount; i++) {
-                 const i3 = i*3;
-                 if (colors[i3+1] > 0.5) { // Only animate the orange particles
-                     const side = Math.ceil(Math.sqrt(vizParticleCount/2)); // Adjust grid size
-                     tl.to(positions, {
-                        [i3]: ((i % side) - side/2) * 0.4,
-                        [i3+1]: (Math.floor(i / side) - side/2) * 0.4,
-                        [i3+2]: 0,
-                        duration: 1.5, ease: 'power2.inOut'
-                    }, "<" + Math.random() * 0.5);
-                 }
-            }
-        }
-    }
-
     initSolutionViz();
 });
