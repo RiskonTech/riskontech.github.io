@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
     
-    // --- Create CIBIL-Style Report ---
+    // --- Create CIBIL-Style Report (NOW WITH ANIMATIONS) ---
     function createCibilReport(applicantId) {
         const applicant = applicantsData[applicantId];
         const latestRecord = applicant.history.length > 0 ? applicant.history.reduce((latest, current) => current.Month_Offset > latest.Month_Offset ? current : latest) : { Predicted_Prob_Default: 0, Risk_Category: 'N/A' };
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .join('');
 
         const reportHTML = `
-            <div id="report-page-container">
+            <div id="report-page-container" style="opacity: 0;">
                 <div class="header">
                     <h1>RISKON&trade; Credit Report</h1>
                     <div class="report-info">
@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         <div class="info-box">
                             <h3>RISKON Score</h3>
                             <div style="text-align: center; padding: 20px 0;">
-                                <span style="font-size: 48px; font-weight: bold; color: #0073b1;">${cibilScore}</span><br>
+                                <span id="cibil-score-span" style="font-size: 48px; font-weight: bold; color: #0073b1;">300</span><br>
                                 <span style="color: #555;">(CIBIL Equivalent)</span>
                             </div>
                         </div>
@@ -140,6 +140,16 @@ document.addEventListener('DOMContentLoaded', function () {
         
         reportContentWrapper.innerHTML = reportHTML;
         document.getElementById('download-pdf-btn').addEventListener('click', () => downloadReportAsPDF(applicantId));
+
+        // GSAP ANIMATIONS FOR THE REPORT
+        const tl = gsap.timeline();
+        const score = { value: 300 };
+        
+        tl.to("#report-page-container", { opacity: 1, duration: 0.5 })
+          .to(score, { value: cibilScore, duration: 1, onUpdate: () => {
+              document.getElementById("cibil-score-span").textContent = Math.round(score.value);
+          }}, "-=0.2")
+          .from(".section", { opacity: 0, y: 30, stagger: 0.2, duration: 0.6 }, "-=0.8");
     }
 
     // --- Handle Report Generation Click ---
@@ -151,6 +161,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         summaryContent.textContent = "Generating summary...";
         summaryContainer.classList.remove('hidden');
+        gsap.from(summaryContainer, { opacity: 0, y: 20, duration: 0.5 });
         generateBtn.style.display = 'none';
 
         setTimeout(() => { // Simulate API call delay
@@ -176,6 +187,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- Landing Page Animations ---
     let heroScene, heroCamera, heroRenderer, heroParticles;
     function initHeroAnimation() {
+       // [The existing, working Three.js hero animation code remains here]
         const container = document.getElementById('hero-animation');
         if (!container) return;
         heroScene = new THREE.Scene();
@@ -183,16 +195,19 @@ document.addEventListener('DOMContentLoaded', function () {
         heroRenderer = new THREE.WebGLRenderer({ alpha: true });
         heroRenderer.setSize(window.innerWidth, window.innerHeight);
         container.appendChild(heroRenderer.domElement);
+
         const particleCount = 8000;
         const geometry = new THREE.BufferGeometry();
         const positions = new Float32Array(particleCount * 3);
         const heroTargetPositions = new Float32Array(particleCount * 3);
         const heroInitialPositions = new Float32Array(particleCount * 3);
+
         const fontLoader = new THREE.FontLoader();
         fontLoader.load('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/fonts/helvetiker_bold.typeface.json', 
             function (font) {
                 const textGeometry = new THREE.TextGeometry('RISKON', { font: font, size: 1.5, height: 0.2, curveSegments: 12 });
                 textGeometry.center();
+                
                 const sampler = new THREE.MeshSurfaceSampler(new THREE.Mesh(textGeometry)).build();
                 const tempPosition = new THREE.Vector3();
                 for (let i = 0; i < particleCount; i++) {
@@ -201,6 +216,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     heroTargetPositions[i * 3 + 1] = tempPosition.y;
                     heroTargetPositions[i * 3 + 2] = tempPosition.z;
                 }
+
                 for (let i = 0; i < particleCount; i++) {
                     const i3 = i * 3;
                     const radius = 10;
@@ -211,14 +227,18 @@ document.addEventListener('DOMContentLoaded', function () {
                     positions[i3 + 2] = radius * Math.cos(phi);
                 }
                 heroInitialPositions.set(positions);
+
                 geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
                 const material = new THREE.PointsMaterial({ color: 0x3b82f6, size: 0.035, transparent: true, opacity: 0 });
                 heroParticles = new THREE.Points(geometry, material);
                 heroScene.add(heroParticles);
+                
                 gsap.to(heroParticles.material, {opacity: 1, duration: 1});
             }
         );
+
         heroCamera.position.z = 10;
+        
         const heroTimeline = gsap.timeline({ scrollTrigger: { trigger: "#hero-section", start: "top top", end: "bottom bottom", scrub: 1 } });
         heroTimeline.to({}, { duration: 1, onUpdate: function() { const progress = this.progress(); if (heroParticles) { const positions = heroParticles.geometry.attributes.position.array; for (let i = 0; i < particleCount; i++) { const i3 = i * 3; positions[i3] = THREE.MathUtils.lerp(heroInitialPositions[i3], heroTargetPositions[i3], progress); positions[i3 + 1] = THREE.MathUtils.lerp(heroInitialPositions[i3+1], heroTargetPositions[i3+1], progress); positions[i3 + 2] = THREE.MathUtils.lerp(heroInitialPositions[i3+2], heroTargetPositions[i3+2], progress); } heroParticles.geometry.attributes.position.needsUpdate = true; } } }, 0);
         heroTimeline.to({}, { duration: 1, onUpdate: function() { const progress = this.progress(); if (heroParticles) { const positions = heroParticles.geometry.attributes.position.array; for (let i = 0; i < particleCount; i++) { const i3 = i * 3; const dismemberedX = heroTargetPositions[i3] * (1 + progress * 5); const dismemberedY = heroTargetPositions[i3+1] * (1 + progress * 5); const dismemberedZ = heroTargetPositions[i3+2] * (1 + progress * 5); positions[i3] = dismemberedX; positions[i3 + 1] = dismemberedY; positions[i3 + 2] = dismemberedZ; } heroParticles.geometry.attributes.position.needsUpdate = true; heroParticles.material.opacity = 1 - progress; } } }, 1);
@@ -228,14 +248,117 @@ document.addEventListener('DOMContentLoaded', function () {
     function animateHero() { requestAnimationFrame(animateHero); if (heroRenderer) { if (heroParticles && !ScrollTrigger.isScrolling) heroParticles.rotation.y += 0.0001; heroRenderer.render(heroScene, heroCamera); } }
     window.addEventListener('resize', () => { if(heroRenderer) { heroCamera.aspect = window.innerWidth / window.innerHeight; heroCamera.updateProjectionMatrix(); heroRenderer.setSize(window.innerWidth, window.innerHeight); } }, false);
     initHeroAnimation();
+    
+    // --- NEW Interactive Solution Section Animation ---
     const solutionStepsData = [ { title: "Data Engineering", description: "From raw, complex data sources to actionable, time-series insights." }, { title: "Feature Preprocessing", description: "Utilizing Weight of Evidence (WoE) and Information Value (IV) for powerful feature selection." }, { title: "Cohort Discovery", description: "Personalized risk assessment by segmenting borrowers into financial archetypes using K-Means clustering." }, { title: "Dynamic Calibration", description: "Solving Ordinary Differential Equations (ODEs) to model dynamic risk factors." }, { title: "Final Model Training", description: "Training cohort-specific ElasticNet models for maximum accuracy and fairness." } ];
     const stepsContainer = document.getElementById('solution-steps');
     solutionStepsData.forEach((step, i) => { stepsContainer.innerHTML += `<div class="step-content" id="step-${i}"><h3 class="text-3xl font-bold mb-3">${step.title}</h3><p class="text-slate-400">${step.description}</p></div>`; });
     const stepContents = document.querySelectorAll(".step-content");
     stepContents.forEach((step, i) => { ScrollTrigger.create({ trigger: step, start: "top center", end: "bottom center", toggleClass: "is-active", onEnter: () => updateSolutionViz(i), onEnterBack: () => updateSolutionViz(i) }); });
-    const svgNodes = document.querySelectorAll('.svg-node');
-    const svgConnectors = document.querySelectorAll('.svg-connector');
-    function updateSolutionViz(index) { svgNodes.forEach((node, i) => { if (i <= index) { node.classList.add('is-active'); } else { node.classList.remove('is-active'); } }); svgConnectors.forEach((connector, i) => { const pathLength = connector.getTotalLength(); if (i < index) { gsap.to(connector, { strokeDashoffset: 0, strokeDasharray: pathLength, duration: 0.5, onStart: () => { connector.setAttribute('marker-end', 'url(#arrowhead-active)'); } }); } else { gsap.to(connector, { strokeDashoffset: pathLength, strokeDasharray: pathLength, duration: 0.5, onComplete: () => { connector.setAttribute('marker-end', 'url(#arrowhead-inactive)'); } }); } }); }
-    svgConnectors.forEach(connector => { const pathLength = connector.getTotalLength(); connector.style.strokeDasharray = pathLength; connector.style.strokeDashoffset = pathLength; });
-    updateSolutionViz(0);
+
+    // --- Solution Viz (Three.js) ---
+    let vizScene, vizCamera, vizRenderer, vizParticles, vizMaterial;
+    const vizParticleCount = 1500;
+    let currentVizState = -1;
+
+    function initSolutionViz() {
+        const container = document.getElementById('solution-viz');
+        if(!container) return;
+        vizScene = new THREE.Scene();
+        vizCamera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+        vizRenderer = new THREE.WebGLRenderer({ alpha: true });
+        vizRenderer.setSize(container.clientWidth, container.clientHeight);
+        container.appendChild(vizRenderer.domElement);
+
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(vizParticleCount * 3);
+        const colors = new Float32Array(vizParticleCount * 3);
+        for (let i = 0; i < vizParticleCount; i++) {
+            const i3 = i*3;
+            positions[i3] = (Math.random() - 0.5) * 15;
+            positions[i3+1] = (Math.random() - 0.5) * 15;
+            positions[i3+2] = (Math.random() - 0.5) * 15;
+            colors[i3] = 1; colors[i3+1] = 1; colors[i3+2] = 1;
+        }
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        
+        vizMaterial = new THREE.PointsMaterial({ size: 0.05, vertexColors: true, transparent: true });
+        vizParticles = new THREE.Points(geometry, vizMaterial);
+        vizScene.add(vizParticles);
+        vizCamera.position.z = 8;
+        updateSolutionViz(0);
+        animateViz();
+    }
+
+    function animateViz() {
+        requestAnimationFrame(animateViz);
+        if (vizRenderer) {
+            if(vizParticles) vizParticles.rotation.y += 0.0005;
+            vizRenderer.render(vizScene, vizCamera);
+        }
+    }
+    
+    function updateSolutionViz(index) {
+        if (index === currentVizState || !vizParticles) return;
+        currentVizState = index;
+        const positions = vizParticles.geometry.attributes.position.array;
+        const colors = vizParticles.geometry.attributes.color.array;
+        const tl = gsap.timeline({ onUpdate: () => { 
+            if(vizParticles) {
+                vizParticles.geometry.attributes.position.needsUpdate = true;
+                vizParticles.geometry.attributes.color.needsUpdate = true;
+            }
+        }});
+        
+        if (index === 0) { // Data Engineering
+             for(let i = 0; i < vizParticleCount; i++) {
+                const i3 = i*3;
+                tl.to(positions, { [i3]: (Math.random() - 0.5) * 2, [i3+1]: (Math.random() - 0.5) * 2, [i3+2]: (Math.random() - 0.5) * 10, duration: 1.5, ease: 'power2.inOut' }, "<" + Math.random() * 0.5);
+                tl.to(colors, { [i3]: 1, [i3+1]: 1, [i3+2]: 1, duration: 1 }, "<");
+            }
+        } else if (index === 1) { // Feature Preprocessing
+            for(let i = 0; i < vizParticleCount; i++) {
+                const i3 = i*3;
+                if (positions[i3] > 0.2) { // "Filter out" some particles
+                    tl.to(positions, { [i3]: 10, duration: 1, ease: 'power2.in' }, "<");
+                    tl.to(colors, { [i3]: 1, [i3+1]: 0.2, [i3+2]: 0.2, duration: 1 }, "<"); // Turn them red
+                } else {
+                    tl.to(colors, { [i3]: 0.2, [i3+1]: 0.5, [i3+2]: 1, duration: 1 }, "<"); // Turn others blue
+                }
+            }
+        } else if (index === 2) { // Cohort Discovery
+            for(let i = 0; i < vizParticleCount; i++) {
+                const i3 = i*3;
+                if (colors[i3] < 0.5) { // Only animate the "kept" blue particles
+                    const cluster = Math.floor(Math.random() * 3);
+                    const clusterX = (cluster - 1) * 4;
+                    tl.to(positions, { [i3]: clusterX + (Math.random() - 0.5) * 2, [i3+1]: (Math.random() - 0.5) * 2, [i3+2]: (Math.random() - 0.5) * 2, duration: 1.5, ease: 'power2.inOut' }, "<" + Math.random() * 0.5);
+                }
+            }
+        } else if (index === 3) { // Dynamic Calibration
+             for(let i = 0; i < vizParticleCount; i++) {
+                const i3 = i*3;
+                 if (colors[i3] < 0.5) {
+                    tl.to(positions, { [i3+1]: positions[i3+1] + Math.sin(positions[i3] + Date.now()*0.001) * 0.1, duration: 1.5, ease: 'elastic.out(1, 0.3)' }, "<" + Math.random() * 0.5);
+                    tl.to(colors, { [i3]: 1, [i3+1]: 0.6, [i3+2]: 0, duration: 1 }, "<"); // Turn them orange
+                 }
+            }
+        } else if (index === 4) { // Final Model
+            for(let i = 0; i < vizParticleCount; i++) {
+                 const i3 = i*3;
+                 if (colors[i3+1] > 0.5) { // Only animate the orange particles
+                     const side = Math.ceil(Math.sqrt(vizParticleCount/2)); // Adjust grid size
+                     tl.to(positions, {
+                        [i3]: ((i % side) - side/2) * 0.4,
+                        [i3+1]: (Math.floor(i / side) - side/2) * 0.4,
+                        [i3+2]: 0,
+                        duration: 1.5, ease: 'power2.inOut'
+                    }, "<" + Math.random() * 0.5);
+                 }
+            }
+        }
+    }
+
+    initSolutionViz();
 });
