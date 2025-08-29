@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const riskColorClass = riskCategory === 'Low' ? 'text-green-400' : riskCategory === 'Medium' ? 'text-yellow-400' : 'text-red-400';
             
             const item = document.createElement('div');
-            item.className = 'glass-card p-4 rounded-lg flex justify-between items-center cursor-pointer transition duration-300 hover:bg-gray-800/50';
+            item.className = 'glass-card monitoring-card p-4 rounded-lg flex justify-between items-center cursor-pointer transition duration-300';
             item.innerHTML = `
                 <div>
                     <p class="text-slate-400 text-sm">Applicant ID</p>
@@ -227,6 +227,7 @@ document.addEventListener('DOMContentLoaded', function () {
             function (font) {
                 const textGeometry = new THREE.TextGeometry('RISKON', { font: font, size: 1.5, height: 0.2, curveSegments: 12 });
                 textGeometry.center();
+                
                 const sampler = new THREE.MeshSurfaceSampler(new THREE.Mesh(textGeometry)).build();
                 const tempPosition = new THREE.Vector3();
                 for (let i = 0; i < particleCount; i++) {
@@ -235,6 +236,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     heroTargetPositions[i * 3 + 1] = tempPosition.y;
                     heroTargetPositions[i * 3 + 2] = tempPosition.z;
                 }
+
                 for (let i = 0; i < particleCount; i++) {
                     const i3 = i * 3;
                     const radius = 10;
@@ -245,10 +247,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     positions[i3 + 2] = radius * Math.cos(phi);
                 }
                 heroInitialPositions.set(positions);
+
                 geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
                 const material = new THREE.PointsMaterial({ color: 0x3b82f6, size: 0.035, transparent: true, opacity: 0 });
                 heroParticles = new THREE.Points(geometry, material);
                 heroScene.add(heroParticles);
+                
                 gsap.to(heroParticles.material, {opacity: 1, duration: 1});
             }
         );
@@ -263,12 +267,12 @@ document.addEventListener('DOMContentLoaded', function () {
     window.addEventListener('resize', () => { if(heroRenderer) { heroCamera.aspect = window.innerWidth / window.innerHeight; heroCamera.updateProjectionMatrix(); heroRenderer.setSize(window.innerWidth, window.innerHeight); } }, false);
     initHeroAnimation();
     
-    // --- NEW "ASSEMBLING PIPELINE" ANIMATION ---
+    // --- "NEURAL NETWORK" ANIMATION ---
     const solutionStepsData = [ { title: "Data Engineering", description: "From raw, complex data sources to actionable, time-series insights." }, { title: "Feature Preprocessing", description: "Utilizing Weight of Evidence (WoE) and Information Value (IV) for powerful feature selection." }, { title: "Cohort Discovery", description: "Personalized risk assessment by segmenting borrowers into financial archetypes using K-Means clustering." }, { title: "Dynamic Calibration", description: "Solving Ordinary Differential Equations (ODEs) to model dynamic risk factors." }, { title: "Final Model Training", description: "Training cohort-specific ElasticNet models for maximum accuracy and fairness." } ];
     const stepsContainer = document.getElementById('solution-steps');
     solutionStepsData.forEach((step, i) => { stepsContainer.innerHTML += `<div class="step-content" id="step-${i}"><h3 class="text-3xl font-bold mb-3">${step.title}</h3><p class="text-slate-400">${step.description}</p></div>`; });
     
-    let vizScene, vizCamera, vizRenderer, tube, nodes = [], head;
+    let vizScene, vizCamera, vizRenderer, nodes = [], lines = [];
     
     function initSolutionViz() {
         const container = document.getElementById('solution-viz');
@@ -280,75 +284,67 @@ document.addEventListener('DOMContentLoaded', function () {
         container.appendChild(vizRenderer.domElement);
         vizCamera.position.set(0, 0, 12);
 
-        const curve = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(0, 8, 0), new THREE.Vector3(4, 4, 0),
-            new THREE.Vector3(-4, 0, 0), new THREE.Vector3(4, -4, 0),
-            new THREE.Vector3(0, -8, 0)
-        ]);
-
-        const tubeGeo = new THREE.TubeGeometry(curve, 128, 0.1, 8, false);
-        const tubeMat = new THREE.MeshBasicMaterial({ color: 0x475569, transparent: true, opacity: 0.3 });
-        tube = new THREE.Mesh(tubeGeo, tubeMat);
-        vizScene.add(tube);
+        const layers = [5, 7, 7, 4]; // Nodes per layer
+        const layerPositions = [];
+        const nodeGeo = new THREE.SphereGeometry(0.2, 16, 16);
         
-        const headGeo = new THREE.SphereGeometry(0.3, 32, 32);
-        const headMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6, emissive: 0x3b82f6, metalness: 0.5, roughness: 0.2 });
-        head = new THREE.Mesh(headGeo, headMat);
-        vizScene.add(head);
+        // Create nodes
+        layers.forEach((count, i) => {
+            const layerX = (i - (layers.length - 1) / 2) * 4;
+            const layer = [];
+            for(let j = 0; j < count; j++) {
+                const nodeMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.2 });
+                const node = new THREE.Mesh(nodeGeo, nodeMat);
+                const nodeY = (j - (count - 1) / 2) * 1.5;
+                node.position.set(layerX, nodeY, 0);
+                nodes.push(node);
+                layer.push(node);
+                vizScene.add(node);
+            }
+            layerPositions.push(layer);
+        });
 
-        const nodeGeo = new THREE.SphereGeometry(0.4, 32, 32);
-        for(let i = 0; i < 5; i++) {
-            const nodeMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, emissive: 0x1e293b, metalness: 0.8, roughness: 0.4 });
-            const node = new THREE.Mesh(nodeGeo, nodeMat);
-            node.position.copy(curve.getPoint(i / 4));
-            nodes.push(node);
-            vizScene.add(node);
+        // Create lines
+        for(let i = 0; i < layerPositions.length - 1; i++) {
+            const currentLayer = layerPositions[i];
+            const nextLayer = layerPositions[i+1];
+            currentLayer.forEach(currentNode => {
+                nextLayer.forEach(nextNode => {
+                    const points = [currentNode.position, nextNode.position];
+                    const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+                    const lineMat = new THREE.LineBasicMaterial({ color: 0x3b82f6, transparent: true, opacity: 0 });
+                    const line = new THREE.Line(lineGeo, lineMat);
+                    lines.push(line);
+                    vizScene.add(line);
+                });
+            });
         }
-
-        const pointLight = new THREE.PointLight(0xffffff, 1, 100);
-        pointLight.position.set(0, 0, 5);
-        vizScene.add(pointLight);
-        vizScene.add(new THREE.AmbientLight(0xffffff, 0.2));
-
-        const scrollTimeline = gsap.timeline({
+        
+        const tl = gsap.timeline({
             scrollTrigger: {
                 trigger: "#solution-section-container",
                 start: "top top",
                 end: "bottom bottom",
                 scrub: 1,
                 onUpdate: (self) => {
-                    const progress = self.progress;
-                    const point = curve.getPointAt(progress);
-                    head.position.copy(point);
-                    
-                    // This creates the "drawing" effect
-                    tube.geometry.setDrawRange(0, Math.floor(progress * tube.geometry.attributes.position.count));
+                    // FIX: Clamp the index to prevent out-of-bounds error
+                    const stepProgress = Math.min(4, Math.floor(self.progress * 5));
+                    const stepContents = document.querySelectorAll(".step-content");
+                    stepContents.forEach((step, i) => {
+                        if (i === stepProgress) {
+                            step.classList.add('is-active');
+                        } else {
+                            step.classList.remove('is-active');
+                        }
+                    });
                 }
             }
         });
 
-        const stepContents = document.querySelectorAll(".step-content");
-        stepContents.forEach((step, i) => { 
-            ScrollTrigger.create({ 
-                trigger: step, 
-                start: "top center", 
-                end: "bottom center", 
-                toggleClass: "is-active",
-                onEnter: () => animateNode(i),
-                onEnterBack: () => animateNode(i),
-            }); 
-        });
+        tl.from(nodes.map(n => n.material), { opacity: 0, stagger: 0.02, duration: 0.2 })
+          .to(lines.map(l => l.material), { opacity: 0.5, stagger: 0.005, duration: 0.8 });
 
         animateViz();
-    }
-
-    function animateNode(index) {
-        nodes.forEach((node, i) => {
-            const isActive = i === index;
-            gsap.to(node.material.color, { r: isActive ? 59/255 : 148/255, g: isActive ? 130/255 : 163/255, b: isActive ? 246/255 : 184/255, duration: 0.5 });
-            gsap.to(node.material, { emissiveIntensity: isActive ? 1 : 0, duration: 0.5 });
-            gsap.to(node.scale, { x: isActive ? 1.5 : 1, y: isActive ? 1.5 : 1, z: isActive ? 1.5 : 1, duration: 0.5, ease: "back.out(1.7)" });
-        });
     }
 
     function animateViz() {
