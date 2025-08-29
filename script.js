@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const riskColorClass = riskCategory === 'Low' ? 'text-green-400' : riskCategory === 'Medium' ? 'text-yellow-400' : 'text-red-400';
             
             const item = document.createElement('div');
-            item.className = 'glass-card p-4 rounded-lg flex justify-between items-center cursor-pointer transition duration-300 hover:bg-gray-800/50';
+            item.className = 'glass-card monitoring-card p-4 rounded-lg flex justify-between items-center cursor-pointer transition duration-300';
             item.innerHTML = `
                 <div>
                     <p class="text-slate-400 text-sm">Applicant ID</p>
@@ -227,6 +227,7 @@ document.addEventListener('DOMContentLoaded', function () {
             function (font) {
                 const textGeometry = new THREE.TextGeometry('RISKON', { font: font, size: 1.5, height: 0.2, curveSegments: 12 });
                 textGeometry.center();
+                
                 const sampler = new THREE.MeshSurfaceSampler(new THREE.Mesh(textGeometry)).build();
                 const tempPosition = new THREE.Vector3();
                 for (let i = 0; i < particleCount; i++) {
@@ -235,6 +236,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     heroTargetPositions[i * 3 + 1] = tempPosition.y;
                     heroTargetPositions[i * 3 + 2] = tempPosition.z;
                 }
+
                 for (let i = 0; i < particleCount; i++) {
                     const i3 = i * 3;
                     const radius = 10;
@@ -245,10 +247,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     positions[i3 + 2] = radius * Math.cos(phi);
                 }
                 heroInitialPositions.set(positions);
+
                 geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
                 const material = new THREE.PointsMaterial({ color: 0x3b82f6, size: 0.035, transparent: true, opacity: 0 });
                 heroParticles = new THREE.Points(geometry, material);
                 heroScene.add(heroParticles);
+                
                 gsap.to(heroParticles.material, {opacity: 1, duration: 1});
             }
         );
@@ -256,4 +260,98 @@ document.addEventListener('DOMContentLoaded', function () {
         const heroTimeline = gsap.timeline({ scrollTrigger: { trigger: "#hero-section", start: "top top", end: "bottom bottom", scrub: 1 } });
         heroTimeline.to({}, { duration: 1, onUpdate: function() { const progress = this.progress(); if (heroParticles) { const positions = heroParticles.geometry.attributes.position.array; for (let i = 0; i < particleCount; i++) { const i3 = i * 3; positions[i3] = THREE.MathUtils.lerp(heroInitialPositions[i3], heroTargetPositions[i3], progress); positions[i3 + 1] = THREE.MathUtils.lerp(heroInitialPositions[i3+1], heroTargetPositions[i3+1], progress); positions[i3 + 2] = THREE.MathUtils.lerp(heroInitialPositions[i3+2], heroTargetPositions[i3+2], progress); } heroParticles.geometry.attributes.position.needsUpdate = true; } } }, 0);
         heroTimeline.to({}, { duration: 1, onUpdate: function() { const progress = this.progress(); if (heroParticles) { const positions = heroParticles.geometry.attributes.position.array; for (let i = 0; i < particleCount; i++) { const i3 = i * 3; const dismemberedX = heroTargetPositions[i3] * (1 + progress * 5); const dismemberedY = heroTargetPositions[i3+1] * (1 + progress * 5); const dismemberedZ = heroTargetPositions[i3+2] * (1 + progress * 5); positions[i3] = dismemberedX; positions[i3 + 1] = dismemberedY; positions[i3 + 2] = dismemberedZ; } heroParticles.geometry.attributes.position.needsUpdate = true; heroParticles.material.opacity = 1 - progress; } } }, 1);
-        heroTimeline.to("#hero-text", { opacity: 1, duration: 0.5 },
+        heroTimeline.to("#hero-text", { opacity: 1, duration: 0.5 }, 1.5);
+        animateHero();
+    }
+    function animateHero() { requestAnimationFrame(animateHero); if (heroRenderer) { if (heroParticles && !ScrollTrigger.isScrolling) heroParticles.rotation.y += 0.0001; heroRenderer.render(heroScene, heroCamera); } }
+    window.addEventListener('resize', () => { if(heroRenderer) { heroCamera.aspect = window.innerWidth / window.innerHeight; heroCamera.updateProjectionMatrix(); heroRenderer.setSize(window.innerWidth, window.innerHeight); } }, false);
+    initHeroAnimation();
+    
+    // --- NEW "NEURAL NETWORK" ANIMATION ---
+    const solutionStepsData = [ { title: "Data Engineering", description: "From raw, complex data sources to actionable, time-series insights." }, { title: "Feature Preprocessing", description: "Utilizing Weight of Evidence (WoE) and Information Value (IV) for powerful feature selection." }, { title: "Cohort Discovery", description: "Personalized risk assessment by segmenting borrowers into financial archetypes using K-Means clustering." }, { title: "Dynamic Calibration", description: "Solving Ordinary Differential Equations (ODEs) to model dynamic risk factors." }, { title: "Final Model Training", description: "Training cohort-specific ElasticNet models for maximum accuracy and fairness." } ];
+    const stepsContainer = document.getElementById('solution-steps');
+    solutionStepsData.forEach((step, i) => { stepsContainer.innerHTML += `<div class="step-content" id="step-${i}"><h3 class="text-3xl font-bold mb-3">${step.title}</h3><p class="text-slate-400">${step.description}</p></div>`; });
+    
+    let vizScene, vizCamera, vizRenderer, nodes = [], lines = [];
+    
+    function initSolutionViz() {
+        const container = document.getElementById('solution-viz');
+        if(!container) return;
+        vizScene = new THREE.Scene();
+        vizCamera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+        vizRenderer = new THREE.WebGLRenderer({ alpha: true });
+        vizRenderer.setSize(container.clientWidth, container.clientHeight);
+        container.appendChild(vizRenderer.domElement);
+        vizCamera.position.set(0, 0, 12);
+
+        const layers = [5, 7, 7, 4]; // Nodes per layer
+        const layerPositions = [];
+        const nodeGeo = new THREE.SphereGeometry(0.2, 16, 16);
+        const nodeMatActive = new THREE.MeshBasicMaterial({ color: 0x3b82f6 });
+        
+        // Create nodes
+        layers.forEach((count, i) => {
+            const layerX = (i - (layers.length - 1) / 2) * 4;
+            const layer = [];
+            for(let j = 0; j < count; j++) {
+                const nodeMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.2 });
+                const node = new THREE.Mesh(nodeGeo, nodeMat);
+                const nodeY = (j - (count - 1) / 2) * 1.5;
+                node.position.set(layerX, nodeY, 0);
+                nodes.push(node);
+                layer.push(node);
+                vizScene.add(node);
+            }
+            layerPositions.push(layer);
+        });
+
+        // Create lines
+        for(let i = 0; i < layerPositions.length - 1; i++) {
+            const currentLayer = layerPositions[i];
+            const nextLayer = layerPositions[i+1];
+            currentLayer.forEach(currentNode => {
+                nextLayer.forEach(nextNode => {
+                    const points = [currentNode.position, nextNode.position];
+                    const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+                    const lineMat = new THREE.LineBasicMaterial({ color: 0x3b82f6, transparent: true, opacity: 0 });
+                    const line = new THREE.Line(lineGeo, lineMat);
+                    lines.push(line);
+                    vizScene.add(line);
+                });
+            });
+        }
+        
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: "#solution-section-container",
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 1,
+                onUpdate: (self) => {
+                    const progress = self.progress;
+                    const stepProgress = Math.floor(progress * 5);
+                    const stepContents = document.querySelectorAll(".step-content");
+                    stepContents.forEach((step, i) => {
+                        if (i === stepProgress) {
+                            step.classList.add('is-active');
+                        } else {
+                            step.classList.remove('is-active');
+                        }
+                    });
+                }
+            }
+        });
+
+        tl.from(nodes.map(n => n.scale), { x: 0, y: 0, z: 0, stagger: 0.02, duration: 0.2 })
+          .to(lines.map(l => l.material), { opacity: 0.5, stagger: 0.005, duration: 0.8 });
+
+        animateViz();
+    }
+
+    function animateViz() {
+        requestAnimationFrame(animateViz);
+        if (vizRenderer) vizRenderer.render(vizScene, vizCamera);
+    }
+    
+    initSolutionViz();
+});
