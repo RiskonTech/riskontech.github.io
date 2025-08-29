@@ -59,37 +59,9 @@ body {
     height: 80vh;
 }
 
-/* SVG Styles for Solution Section */
-.svg-node circle {
-    stroke-width: 2;
-    stroke: #475569;
-    fill: #1e293b;
-    transition: all 0.3s ease-in-out;
-}
-.svg-node text {
-    fill: #94a3b8;
-    font-size: 14px;
-    font-weight: 500;
-    text-anchor: middle;
-    transition: fill 0.3s ease-in-out;
-}
-.svg-connector {
-    stroke: #475569;
-    stroke-width: 2;
-    fill: none;
-    transition: stroke 0.3s ease-in-out;
-}
-.svg-node.is-active circle {
-    stroke: #3b82f6;
-    fill: #3b82f633;
-}
-.svg-node.is-active text {
-    fill: #e2e8f0;
-}
 
-
-/* --- CIBIL REPORT STYLES (from your provided code) --- */
-#report-page-container { /* Renamed for specificity */
+/* --- CIBIL REPORT STYLES --- */
+#report-page-container { 
     width: 8.5in;
     min-height: 11in;
     margin: 30px auto;
