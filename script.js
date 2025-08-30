@@ -31,8 +31,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const latestRecord = applicant.history.length > 0 ? applicant.history.reduce((latest, current) => current.Month_Offset > latest.Month_Offset ? current : latest) : { Predicted_Prob_Default: 0, Risk_Category: 'N/A' };
             const riskPercentage = (latestRecord.Predicted_Prob_Default * 100).toFixed(2);
             const riskCategory = latestRecord.Risk_Category;
-            const riskColorClass = riskCategory === 'Low' ? 'text-green-400' : riskCategory === 'Medium' ? 'text-yellow-400' : riskCategory === 'High' ? 'text-red-400' :
-    'text-green-400';
+            const riskColorClass = riskCategory === 'Low' ? 'text-green-400' : riskCategory === 'Medium' ? 'text-yellow-400' : riskCategory === 'High' ? 'text-red-400': riskCategory === 'N/A'? 'text-green-400': 'text-gray-400';
             
             const item = document.createElement('div');
             item.className = 'glass-card p-4 rounded-lg flex justify-between items-center cursor-pointer transition duration-300 hover:bg-gray-800/50';
@@ -102,7 +101,8 @@ document.addEventListener('DOMContentLoaded', function () {
                      <div class="info-box">
                          <div class="grid-container">
                             <div>
-                                 <div class="info-pair"><span class="label">RISKON Category:</span> <span class="value font-bold ${latestRecord.Risk_Category === 'Low' ? 'text-green-600' : latestRecord.Risk_Category === 'Medium' ? 'text-yellow-600' : 'text-red-600'}">${latestRecord.Risk_Category}</span></div>
+                                 <div class="info-pair"><span class="label">RISKON Category:</span> <span class="value font-bold ${    latestRecord.Risk_Category === 'Low' ? 'text-green-600' : latestRecord.Risk_Category === 'Medium' ? 'text-yellow-600' :latestRecord.Risk_Category === 'High' ? 'text-red-600' : latestRecord.Risk_Category === 'N/A' ? 'text-green-600' :'text-gray-600'}">${latestRecord.Risk_Category}</span>
+</div>
                                  <div class="info-pair"><span class="label">Default Probability:</span> <span class="value">${(latestRecord.Predicted_Prob_Default * 100).toFixed(2)}%</span></div>
                             </div>
                             <div class="graph-container">
