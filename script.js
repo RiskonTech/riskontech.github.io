@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function () {
                      <div class="info-box">
                          <div class="grid-container">
                             <div>
-                                 <div class="info-pair"><span class="label">RISKON Category:</span> <<span class="value font-bold ${getRiskColor(latestRecord.Risk_Category)}">${latestRecord.Risk_Category}</span>
+                                 <div class="info-pair"><span class="label">RISKON Category:</span> <span class="value font-bold ${getRiskColor(latestRecord.Risk_Category)}">${latestRecord.Risk_Category}</span>
 </div>
                                  <div class="info-pair"><span class="label">Default Probability:</span> <span class="value">${(latestRecord.Predicted_Prob_Default * 100).toFixed(2)}%</span></div>
                             </div>
