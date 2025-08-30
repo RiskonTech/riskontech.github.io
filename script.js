@@ -11,14 +11,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const applicantListContainer = document.getElementById('applicant-list');
     const reportContentWrapper = document.getElementById('report-content-wrapper');
 
-    function getRiskColor(riskCategory) {
-        switch (riskCategory) {
-            case 'Low': return 'style="color: green;"';
-            case 'Medium': return 'style="color: orange;"';
-            case 'High': return 'style="color: red;"';
-            case 'N/A': return 'style="color: gray;"';
-            default: return 'style="color: black;"';
-        }
+    function getRiskColor(risk) {
+      switch ((risk || '').toLowerCase()) {
+        case 'high':   return 'risk-high';
+        case 'medium': return 'risk-medium';
+        case 'low':    return 'risk-low';
+        default:       return ''; // no extra class for N/A/unknown
+      }
     }
 
 
@@ -42,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const latestRecord = applicant.history.length > 0 ? applicant.history.reduce((latest, current) => current.Month_Offset > latest.Month_Offset ? current : latest) : { Predicted_Prob_Default: 0, Risk_Category: 'N/A' };
             const riskPercentage = (latestRecord.Predicted_Prob_Default * 100).toFixed(2);
             const riskCategory = latestRecord.Risk_Category;
-            const riskColorStyle = getRiskColor(riskCategory);
+            const riskColorClass = getRiskColor(riskCategory);
             
             const item = document.createElement('div');
             item.className = 'glass-card p-4 rounded-lg flex justify-between items-center cursor-pointer transition duration-300 hover:bg-gray-800/50';
@@ -112,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function () {
                      <div class="info-box">
                          <div class="grid-container">
                             <div>
-                                 <div class="info-pair"><span class="label">RISKON Category:</span> <span class="value font-bold ${getRiskColor(latestRecord.Risk_Category)}>${latestRecord.Risk_Category}</span>
+                                 <div class="info-pair"><span class="label">RISKON Category:</span> <<span class="value font-bold ${getRiskColor(latestRecord.Risk_Category)}">${latestRecord.Risk_Category}</span>
 </div>
                                  <div class="info-pair"><span class="label">Default Probability:</span> <span class="value">${(latestRecord.Predicted_Prob_Default * 100).toFixed(2)}%</span></div>
                             </div>
