@@ -31,7 +31,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const latestRecord = applicant.history.length > 0 ? applicant.history.reduce((latest, current) => current.Month_Offset > latest.Month_Offset ? current : latest) : { Predicted_Prob_Default: 0, Risk_Category: 'N/A' };
             const riskPercentage = (latestRecord.Predicted_Prob_Default * 100).toFixed(2);
             const riskCategory = latestRecord.Risk_Category;
-            const riskColorClass = riskCategory === 'Low' ? 'text-green-400' : riskCategory === 'Medium' ? 'text-yellow-400' : 'text-red-400';
+            const riskColorClass = riskCategory === 'Low' ? 'text-green-400' : riskCategory === 'Medium' ? 'text-yellow-400' : riskCategory === 'High' ? 'text-red-400' :
+    'text-green-400';
             
             const item = document.createElement('div');
             item.className = 'glass-card p-4 rounded-lg flex justify-between items-center cursor-pointer transition duration-300 hover:bg-gray-800/50';
